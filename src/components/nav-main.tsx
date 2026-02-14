@@ -1,0 +1,41 @@
+import { type Icon } from "@tabler/icons-react"
+
+import {
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from "@/components/ui/sidebar"
+
+export function NavMain({
+  items,
+}: {
+  readonly items: readonly {
+    readonly title: string
+    readonly url: string
+    readonly icon?: Icon
+    readonly isActive?: boolean
+  }[]
+}) {
+  return (
+    <SidebarGroup>
+      <SidebarGroupContent className="flex flex-col gap-2">
+        <SidebarMenu>
+          {items.map((item) => (
+            <SidebarMenuItem key={item.title}>
+              <SidebarMenuButton
+                tooltip={item.title}
+                isActive={item.isActive}
+                className="data-[active=true]:bg-primary data-[active=true]:text-primary-foreground"
+              >
+                {item.icon && <item.icon />}
+                <span>{item.title}</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
+        </SidebarMenu>
+      </SidebarGroupContent>
+    </SidebarGroup>
+  )
+}

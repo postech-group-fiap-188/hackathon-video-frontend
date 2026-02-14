@@ -1,0 +1,23 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+<!-- Fundo Arredondado -->
+<rect width="512" height="512" rx="112" fill="#1E3A8A"/>
+
+<!-- Grupo do Ícone -->
+
+<g transform="translate(0, -30)">
+<!-- Estrutura do Béquer -->
+<path d="M180 100H332M220 100V200L140 340C130 360 145 380 170 380H342C367 380 382 360 372 340L292 200V100" stroke="#22D3EE" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+
+<!-- Símbolo de Play -->
+<path d="M235 230L305 275L235 320V230Z" fill="#22D3EE"/>
+
+<!-- Detalhes de Dados -->
+<path d="M195 300H317" stroke="#22D3EE" stroke-width="10" stroke-opacity="0.5" stroke-linecap="round"/>
+
+
+</g>
+
+<!-- Nome FIAP LAB -->
+
+<text x="256" y="450" font-family="sans-serif" font-size="60" font-weight="900" fill="#22D3EE" text-anchor="middle" style="letter-spacing: 2px;">FIAP LAB</text>
+</svg>

@@ -1,0 +1,30 @@
+[
+    {
+        "id": "1",
+        "filename": "demo_presentation_v1.mp4",
+        "status": "Done",
+        "submittedAt": "2024-01-20T10:00:00Z",
+        "downloadUrl": "/downloads/demo_v1.zip"
+    },
+    {
+        "id": "2",
+        "filename": "interview_part1.mov",
+        "status": "Processing",
+        "submittedAt": "2024-01-21T14:30:00Z",
+        "downloadUrl": null
+    },
+    {
+        "id": "3",
+        "filename": "failed_upload.avi",
+        "status": "Error",
+        "submittedAt": "2024-01-21T15:00:00Z",
+        "downloadUrl": null
+    },
+    {
+        "id": "4",
+        "filename": "new_feature_demo.mp4",
+        "status": "Processing",
+        "submittedAt": "2024-01-21T16:45:00Z",
+        "downloadUrl": null
+    }
+]
