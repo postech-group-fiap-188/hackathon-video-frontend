@@ -53,7 +53,7 @@ export function ResetPasswordForm({
 
     if (!email) {
         return (
-            <div className={cn("flex flex-col gap-6 text-center", className)} {...props}>
+            <div className={cn("flex flex-col gap-6 text-center", className)}>
                 <p className="text-red-500">Email não fornecido. Por favor, inicie o processo novamente.</p>
                 <Link href="/" className="underline underline-offset-4">Voltar para Login</Link>
             </div>
