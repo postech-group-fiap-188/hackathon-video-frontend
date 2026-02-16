@@ -1,6 +1,6 @@
 "use client"
 
-import { IconDotsVertical, IconLogout } from "@tabler/icons-react"
+import { IconDotsVertical, IconLogout, IconUser } from "@tabler/icons-react"
 import { signOut } from 'aws-amplify/auth';
 
 import {
@@ -38,11 +38,7 @@ export function NavUser({
   const { isMobile } = useSidebar()
   const [isLoading, setIsLoading] = useState(false)
 
-  const nameToUse = user.name || user.email || "CN";
-  const parts = nameToUse.split('@')[0].split(/[\s.]+/);
-  const initials = parts.length > 1
-    ? (parts[0][0] + parts[1][0]).toUpperCase()
-    : nameToUse.substring(0, 2).toUpperCase();
+
 
   const handleLogout = async () => {
     try {
@@ -70,7 +66,9 @@ export function NavUser({
                 {user.avatar ? (
                   <AvatarImage src={user.avatar} alt={user.name} />
                 ) : null}
-                <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
+                <AvatarFallback className="rounded-lg">
+                  <IconUser className="size-5 opacity-80" />
+                </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{user.name}</span>
@@ -98,7 +96,9 @@ export function NavUser({
                   {user.avatar ? (
                     <AvatarImage src={user.avatar} alt={user.name} />
                   ) : null}
-                  <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
+                  <AvatarFallback className="rounded-lg">
+                    <IconUser className="size-5 opacity-80" />
+                  </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user.name}</span>
@@ -109,8 +109,11 @@ export function NavUser({
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout}>
-              <IconLogout />
+            <DropdownMenuItem
+              onClick={handleLogout}
+              className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
+            >
+              <IconLogout className="text-destructive" />
               Sair
             </DropdownMenuItem>
           </DropdownMenuContent>

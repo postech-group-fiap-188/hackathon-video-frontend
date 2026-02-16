@@ -2,13 +2,80 @@
 
 import * as React from "react"
 import { VideoUpload } from "@/components/video-upload"
-import { VideoTable, Video } from "@/components/video-table"
+import { VideoTable, Video, VideoStatus } from "@/components/video-table"
 import { VideoEditor } from "@/components/video-editor"
-import videos from "./videos.json"
+import { fetchVideos, BackendVideo, generateZipUrl } from "@/services/video-service"
+import { toast } from "sonner"
 
 export function DashboardContent() {
     const [selectedVideos, setSelectedVideos] = React.useState<File[]>([])
-    const [videosState, setVideosState] = React.useState<Video[]>(videos as Video[])
+    const [videosState, setVideosState] = React.useState<Video[]>([])
+    const [isLoading, setIsLoading] = React.useState(false)
+
+    const mapBackendVideoToVideo = (bv: BackendVideo): Video => {
+        // ... existing statusMap and logic ...
+        const statusMap: Record<string, VideoStatus> = {
+            "PENDING": "Pending",
+            "PROCESSING": "Processing",
+            "DONE": "Done",
+            "SUCCEEDED": "Succeeded",
+            "ERROR": "Error"
+        };
+        const status = statusMap[bv.status] || "Pending";
+
+        return {
+            id: bv.id,
+            filename: bv.originalFileName,
+            status: status,
+            submittedAt: bv.createdAt,
+            downloadUrl: bv.downloadUrl || null,
+        }
+    }
+
+    const loadVideos = React.useCallback(async () => {
+        setIsLoading(true)
+        try {
+            const items = await fetchVideos();
+            const mapped = items.map(mapBackendVideoToVideo);
+            setVideosState(mapped);
+        } catch (error) {
+            console.error("Failed to load videos", error);
+        } finally {
+            setIsLoading(false)
+        }
+    }, []);
+
+    React.useEffect(() => {
+        loadVideos();
+    }, [loadVideos]);
+
+    const [processingZipIds, setProcessingZipIds] = React.useState<Set<string>>(new Set())
+
+    const handleGenerateZip = async (videoId: string) => {
+        setProcessingZipIds(prev => new Set(prev).add(videoId));
+        try {
+            const downloadUrl = await generateZipUrl(videoId);
+            if (downloadUrl) {
+                const link = document.createElement('a');
+                link.href = downloadUrl;
+                link.setAttribute('download', '');
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+
+                toast.success("Download Concluído!");
+            }
+        } catch (error) {
+            console.error("Failed to generate zip", error);
+            toast.error("Ocorreu um erro ao gerar o arquivo ZIP.");
+        } finally {
+            setProcessingZipIds(prev => {
+                const updated = new Set(prev);
+                updated.delete(videoId);
+                return updated;
+            });
+        }
+    }
 
     const handleVideoSelect = (files: File[]) => {
         setSelectedVideos(files)
@@ -18,15 +85,8 @@ export function DashboardContent() {
         setSelectedVideos([])
     }
 
-    const handleProcessComplete = (files: File[]) => {
-        const newVideos: Video[] = files.map((file, i) => ({
-            id: `new-${Date.now()}-${i}`,
-            filename: file.name,
-            status: "Processing",
-            submittedAt: new Date().toISOString(),
-        }))
-
-        setVideosState(prev => [...newVideos, ...prev])
+    const handleProcessComplete = () => {
+        loadVideos()
         setSelectedVideos([])
     }
 
@@ -44,7 +104,13 @@ export function DashboardContent() {
         <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 lg:px-6">
             <div className="grid gap-6">
                 <VideoUpload onVideoSelect={handleVideoSelect} />
-                <VideoTable data={videosState} />
+                <VideoTable
+                    data={videosState}
+                    isLoading={isLoading}
+                    onGenerateZip={handleGenerateZip}
+                    onRefresh={loadVideos}
+                    processingZipIds={processingZipIds}
+                />
             </div>
         </div>
     )

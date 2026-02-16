@@ -31,8 +31,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
+import { Skeleton } from "@/components/ui/skeleton"
 
-export type VideoStatus = "Pending" | "Processing" | "Done" | "Error"
+export type VideoStatus = "Pending" | "Processing" | "Done" | "Error" | "Succeeded"
 
 export interface Video {
     id: string
@@ -44,9 +45,13 @@ export interface Video {
 
 interface VideoTableProps {
     readonly data: Video[]
+    readonly onGenerateZip?: (id: string, filename: string) => Promise<void>
+    readonly onRefresh?: () => Promise<void>
+    readonly processingZipIds?: Set<string>
+    readonly isLoading?: boolean
 }
 
-export function VideoTable({ data: initialData }: VideoTableProps) {
+export function VideoTable({ data: initialData, onGenerateZip, onRefresh, processingZipIds = new Set(), isLoading }: VideoTableProps) {
     const [data, setData] = React.useState(initialData)
     const [isRefreshing, setIsRefreshing] = React.useState(false)
 
@@ -60,8 +65,12 @@ export function VideoTable({ data: initialData }: VideoTableProps) {
 
     const handleRefresh = async () => {
         setIsRefreshing(true)
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        setData([...initialData])
+        if (onRefresh) {
+            await onRefresh()
+        } else {
+            await new Promise(resolve => setTimeout(resolve, 1000))
+            setData([...initialData])
+        }
         setIsRefreshing(false)
     }
 
@@ -69,7 +78,7 @@ export function VideoTable({ data: initialData }: VideoTableProps) {
         return data.filter(video => {
             if (statusFilter === "all") return true
             if (statusFilter === "processing") return video.status === "Processing" || video.status === "Pending"
-            if (statusFilter === "done") return video.status === "Done"
+            if (statusFilter === "done") return video.status === "Done" || video.status === "Succeeded"
             if (statusFilter === "error") return video.status === "Error"
             return true
         })
@@ -95,6 +104,12 @@ export function VideoTable({ data: initialData }: VideoTableProps) {
                         <IconCheck className="h-3 w-3" /> Concluído
                     </Badge>
                 )
+            case "Succeeded":
+                return (
+                    <Badge variant="outline" className="border-green-600 text-green-600 gap-1">
+                        <IconCheck className="h-3 w-3" /> Processado
+                    </Badge>
+                )
             case "Processing":
             case "Pending":
                 return (
@@ -111,6 +126,81 @@ export function VideoTable({ data: initialData }: VideoTableProps) {
             default:
                 return <Badge variant="secondary">{status}</Badge>
         }
+    }
+
+    const renderTableContent = () => {
+        let tableContent;
+
+        if (isLoading) {
+            tableContent = Array.from({ length: pageSize }).map((_, i) => (
+                <TableRow key={`skeleton-${i}`}>
+                    <TableCell><Skeleton className="h-5 w-[200px]" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-[80px]" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-[150px]" /></TableCell>
+                    <TableCell className="text-right"><Skeleton className="h-8 w-[100px] ml-auto" /></TableCell>
+                </TableRow>
+            ));
+        } else if (paginatedData.length === 0) {
+            tableContent = (
+                <TableRow>
+                    <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
+                        Nenhum vídeo encontrado.
+                    </TableCell>
+                </TableRow>
+            );
+        } else {
+            tableContent = paginatedData.map((video) => {
+                const isSucceeded = video.status === "Succeeded";
+                const isDoneWithUrl = video.status === "Done" && video.downloadUrl;
+                const isGeneratingZip = processingZipIds.has(video.id);
+
+                return (
+                    <TableRow key={video.id}>
+                        <TableCell className="font-medium flex items-center gap-2">
+                            <IconVideo className="h-5 w-5 text-muted-foreground" />
+                            {video.filename}
+                        </TableCell>
+                        <TableCell>{getStatusBadge(video.status)}</TableCell>
+                        <TableCell>
+                            <span suppressHydrationWarning>
+                                {new Date(video.submittedAt).toLocaleString('pt-BR')}
+                            </span>
+                        </TableCell>
+                        <TableCell className="text-right">
+                            {isSucceeded && (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => onGenerateZip?.(video.id, video.filename)}
+                                    disabled={isGeneratingZip}
+                                >
+                                    {isGeneratingZip ? (
+                                        <>
+                                            <IconLoader className="h-4 w-4 mr-2 animate-spin" /> Gerando...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <IconDownload className="h-4 w-4 mr-2" /> Gerar ZIP
+                                        </>
+                                    )}
+                                </Button>
+                            )}
+
+                            {isDoneWithUrl ? (
+                                <Button variant="ghost" size="sm" asChild>
+                                    <a href={video.downloadUrl!} download>
+                                        <IconDownload className="h-4 w-4 mr-2" /> Baixar ZIP
+                                    </a>
+                                </Button>
+                            ) : !isSucceeded && (
+                                <span className="text-muted-foreground text-sm">-</span>
+                            )}
+                        </TableCell>
+                    </TableRow>
+                );
+            });
+        }
+        return tableContent;
     }
 
     return (
@@ -152,39 +242,7 @@ export function VideoTable({ data: initialData }: VideoTableProps) {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {paginatedData.length > 0 ? (
-                                paginatedData.map((video) => (
-                                    <TableRow key={video.id}>
-                                        <TableCell className="font-medium flex items-center gap-2">
-                                            <IconVideo className="h-5 w-5 text-muted-foreground" />
-                                            {video.filename}
-                                        </TableCell>
-                                        <TableCell>{getStatusBadge(video.status)}</TableCell>
-                                        <TableCell>
-                                            <span suppressHydrationWarning>
-                                                {new Date(video.submittedAt).toLocaleString('pt-BR')}
-                                            </span>
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            {video.status === "Done" && video.downloadUrl ? (
-                                                <Button variant="ghost" size="sm" asChild>
-                                                    <a href={video.downloadUrl} download>
-                                                        <IconDownload className="h-4 w-4 mr-2" /> Baixar ZIP
-                                                    </a>
-                                                </Button>
-                                            ) : (
-                                                <span className="text-muted-foreground text-sm">-</span>
-                                            )}
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            ) : (
-                                <TableRow>
-                                    <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
-                                        Nenhum vídeo encontrado.
-                                    </TableCell>
-                                </TableRow>
-                            )}
+                            {renderTableContent()}
                         </TableBody>
                     </Table>
                 </div>
