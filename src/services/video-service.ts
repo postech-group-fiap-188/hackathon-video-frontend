@@ -101,7 +101,7 @@ export const uploadVideos = async (files: File[], onProgress?: (progress: number
         return axios.put(uploadUrl, file, {
             headers: {
                 'Content-Type': file.type || 'application/octet-stream',
-                'x-amz-meta-original-name': file.name
+                'original-name': file.name
             },
             onUploadProgress: (progressEvent) => {
                 if (onProgress) {
