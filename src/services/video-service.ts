@@ -52,6 +52,12 @@ export const generateZipUrl = async (videoId: string): Promise<string> => {
     }
 };
 
+export interface UploadResponseItem {
+    uploadUrl?: string;
+    url?: string;
+    presignedUrl?: string;
+}
+
 export const uploadVideos = async (files: File[], onProgress?: (progress: number) => void): Promise<void> => {
     const payload = {
         files: files.map(file => ({
@@ -60,18 +66,30 @@ export const uploadVideos = async (files: File[], onProgress?: (progress: number
         }))
     };
 
-    const response = await api.post<any>('/videos/upload', payload);
+    const response = await api.post<unknown>('/videos/upload', payload);
+    const data = response.data;
 
-    const filesResponse = response.data.items || response.data.files || (Array.isArray(response.data) ? response.data : null);
+    let filesResponse: UploadResponseItem[] | null = null;
 
-    if (!Array.isArray(filesResponse)) {
+    if (Array.isArray(data)) {
+        filesResponse = data as UploadResponseItem[];
+    } else if (data && typeof data === 'object') {
+        const dataObj = data as Record<string, unknown>;
+        if (Array.isArray(dataObj.items)) {
+            filesResponse = dataObj.items as UploadResponseItem[];
+        } else if (Array.isArray(dataObj.files)) {
+            filesResponse = dataObj.files as UploadResponseItem[];
+        }
+    }
+
+    if (!filesResponse) {
         throw new TypeError('Formato de resposta inválido: esperava-se uma lista de itens.');
     }
 
     const totalSize = files.reduce((acc, file) => acc + file.size, 0);
     const loadedBytes = new Array(files.length).fill(0);
 
-    const uploadPromises = filesResponse.map((fileData: any, index: number) => {
+    const uploadPromises = filesResponse.map((fileData: UploadResponseItem, index: number) => {
         const file = files[index];
 
         const uploadUrl = fileData.uploadUrl || fileData.url || fileData.presignedUrl;

@@ -18,6 +18,8 @@ import { uploadVideos } from "@/services/video-service"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Field, FieldLabel } from "@/components/ui/field"
+import { Progress } from "@/components/ui/progress"
 
 interface VideoEditorProps {
     readonly videoFiles: File[]
@@ -119,25 +121,27 @@ export function VideoEditor({ videoFiles, onBack, onProcessComplete }: VideoEdit
                     </div>
                 </div>
 
-                <Button
-                    className="relative w-full md:w-auto px-8 h-11 transition-all rounded-lg shadow-lg hover:shadow-xl shadow-primary/20 overflow-hidden font-semibold"
-                    onClick={handleGenerateZip}
-                    disabled={isProcessing}
-                >
-                    <div
-                        className="absolute inset-y-0 left-0 bg-white/25 transition-[width] ease-out duration-300"
-                        style={{ width: isProcessing ? `${uploadProgress}%` : '0%' }}
-                    />
-                    <span className="relative flex items-center justify-center gap-2">
-                        {isProcessing ? (
-                            <>Processando...</>
-                        ) : (
-                            <>
-                                <IconFileTypeZip className="h-4 w-4" /> Enviar para Processamento
-                            </>
-                        )}
-                    </span>
-                </Button>
+                {isProcessing ? (
+                    <div className="w-full md:w-auto md:min-w-[240px]">
+                        <Field className="w-full">
+                            <FieldLabel htmlFor="progress-upload" className="flex justify-between text-xs font-semibold mb-1">
+                                <span>Enviando arquivos...</span>
+                                <span className="ml-auto font-mono">{Math.round(uploadProgress)}%</span>
+                            </FieldLabel>
+                            <Progress value={uploadProgress} id="progress-upload" className="h-2" />
+                        </Field>
+                    </div>
+                ) : (
+                    <Button
+                        className="relative w-full md:w-auto px-8 h-11 transition-all rounded-lg shadow-lg hover:shadow-xl shadow-primary/20 overflow-hidden font-semibold"
+                        onClick={handleGenerateZip}
+                        disabled={isProcessing}
+                    >
+                        <span className="relative flex items-center justify-center gap-2">
+                            <IconFileTypeZip className="h-4 w-4" /> Enviar para Processamento
+                        </span>
+                    </Button>
+                )}
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:flex-1 lg:min-h-0">
