@@ -35,6 +35,7 @@ export function VideoEditor({ videoFiles, onBack, onProcessComplete }: VideoEdit
     const [duration, setDuration] = React.useState(0)
 
     const [isProcessing, setIsProcessing] = React.useState(false)
+    const [uploadProgress, setUploadProgress] = React.useState(0)
 
     React.useEffect(() => {
         if (videoRef.current) {
@@ -82,7 +83,9 @@ export function VideoEditor({ videoFiles, onBack, onProcessComplete }: VideoEdit
     const handleGenerateZip = async () => {
         setIsProcessing(true)
         try {
-            await uploadVideos(videoFiles)
+            await uploadVideos(videoFiles, (progress) => {
+                setUploadProgress(progress)
+            })
             toast.success("Processamento iniciado!", {
                 description: `Os vídeos foram enviados para a fila de processamento.`
             })
@@ -122,7 +125,8 @@ export function VideoEditor({ videoFiles, onBack, onProcessComplete }: VideoEdit
                     disabled={isProcessing}
                 >
                     <div
-                        className={`absolute inset-y-0 left-0 bg-white/25 transition-[width] ease-linear ${isProcessing ? 'w-full duration-[3000ms]' : 'w-0 duration-300'}`}
+                        className="absolute inset-y-0 left-0 bg-white/25 transition-[width] ease-out duration-300"
+                        style={{ width: isProcessing ? `${uploadProgress}%` : '0%' }}
                     />
                     <span className="relative flex items-center justify-center gap-2">
                         {isProcessing ? (
