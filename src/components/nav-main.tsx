@@ -1,3 +1,4 @@
+import Link from "next/link"
 import { type Icon } from "@tabler/icons-react"
 
 import {
@@ -25,12 +26,15 @@ export function NavMain({
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton
+                asChild
                 tooltip={item.title}
                 isActive={item.isActive}
                 className="data-[active=true]:bg-primary data-[active=true]:text-primary-foreground"
               >
-                {item.icon && <item.icon />}
-                <span>{item.title}</span>
+                <Link href={item.url}>
+                  {item.icon && <item.icon />}
+                  <span>{item.title}</span>
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}

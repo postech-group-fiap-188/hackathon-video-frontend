@@ -4,9 +4,12 @@ import {
   SidebarInset,
   SidebarProvider,
 } from "@/components/ui/sidebar"
-import { DashboardContent } from "./dashboard-content";
 
-export default function Page() {
+export default function AppLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   return (
     <SidebarProvider
       style={
@@ -21,7 +24,7 @@ export default function Page() {
         <SiteHeader />
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
-            <DashboardContent />
+            {children}
           </div>
         </div>
       </SidebarInset>
