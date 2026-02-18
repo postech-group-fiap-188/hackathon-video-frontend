@@ -134,10 +134,10 @@ export function VideoTable({ data: initialData, onGenerateZip, onRefresh, proces
         if (isLoading) {
             tableContent = Array.from({ length: pageSize }).map((_, i) => (
                 <TableRow key={`skeleton-${i}`}>
-                    <TableCell><Skeleton className="h-5 w-[200px]" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-full max-w-[120px] sm:max-w-[200px]" /></TableCell>
                     <TableCell><Skeleton className="h-5 w-[80px]" /></TableCell>
-                    <TableCell><Skeleton className="h-5 w-[150px]" /></TableCell>
-                    <TableCell className="text-right"><Skeleton className="h-8 w-[100px] ml-auto" /></TableCell>
+                    <TableCell className="hidden sm:table-cell"><Skeleton className="h-5 w-[150px]" /></TableCell>
+                    <TableCell className="text-right"><Skeleton className="h-8 w-[80px] sm:w-[100px] ml-auto" /></TableCell>
                 </TableRow>
             ));
         } else if (paginatedData.length === 0) {
@@ -156,40 +156,43 @@ export function VideoTable({ data: initialData, onGenerateZip, onRefresh, proces
 
                 return (
                     <TableRow key={video.id}>
-                        <TableCell className="font-medium flex items-center gap-2">
-                            <IconVideo className="h-5 w-5 text-muted-foreground" />
-                            {video.filename}
+                        <TableCell className="font-medium min-w-0 max-w-[140px] sm:max-w-[280px]">
+                            <span className="flex items-center gap-2 min-w-0">
+                                <IconVideo className="h-5 w-5 shrink-0 text-muted-foreground" />
+                                <span className="truncate" title={video.filename}>{video.filename}</span>
+                            </span>
                         </TableCell>
-                        <TableCell>{getStatusBadge(video.status)}</TableCell>
-                        <TableCell>
+                        <TableCell className="whitespace-nowrap">{getStatusBadge(video.status)}</TableCell>
+                        <TableCell className="hidden whitespace-nowrap sm:table-cell">
                             <span suppressHydrationWarning>
                                 {new Date(video.submittedAt).toLocaleString('pt-BR')}
                             </span>
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="text-right whitespace-nowrap">
                             {isSucceeded && (
                                 <Button
                                     variant="outline"
                                     size="sm"
                                     onClick={() => onGenerateZip?.(video.id, video.filename)}
                                     disabled={isGeneratingZip}
+                                    className="inline-flex"
                                 >
                                     {isGeneratingZip ? (
                                         <>
-                                            <IconLoader className="h-4 w-4 mr-2 animate-spin" /> Gerando...
+                                            <IconLoader className="h-4 w-4 mr-1 sm:mr-2 animate-spin shrink-0" /> <span className="hidden sm:inline">Gerando...</span>
                                         </>
                                     ) : (
                                         <>
-                                            <IconDownload className="h-4 w-4 mr-2" /> Gerar ZIP
+                                            <IconDownload className="h-4 w-4 mr-1 sm:mr-2 shrink-0" /> <span className="hidden sm:inline">Gerar ZIP</span>
                                         </>
                                     )}
                                 </Button>
                             )}
 
                             {isDoneWithUrl ? (
-                                <Button variant="ghost" size="sm" asChild>
+                                <Button variant="ghost" size="sm" asChild className="inline-flex">
                                     <a href={video.downloadUrl!} download>
-                                        <IconDownload className="h-4 w-4 mr-2" /> Baixar ZIP
+                                        <IconDownload className="h-4 w-4 mr-1 sm:mr-2 shrink-0" /> <span className="hidden sm:inline">Baixar ZIP</span>
                                     </a>
                                 </Button>
                             ) : !isSucceeded && (
@@ -204,30 +207,30 @@ export function VideoTable({ data: initialData, onGenerateZip, onRefresh, proces
     }
 
     return (
-        <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-4">
-                <div className="space-y-1.5">
+        <Card className="min-w-0 overflow-hidden">
+            <CardHeader className="flex flex-col gap-4 pb-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="space-y-1.5 min-w-0">
                     <CardTitle>Vídeos Recentes</CardTitle>
                     <CardDescription>
                         Lista dos seus vídeos processados e seus status.
                     </CardDescription>
                 </div>
-                <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isRefreshing}>
+                <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isRefreshing} className="shrink-0">
                     <IconRefresh className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
                     Atualizar
                 </Button>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 min-w-0">
 
                 <Tabs defaultValue="all" value={statusFilter} onValueChange={(val) => {
                     setStatusFilter(val)
                     setCurrentPage(1)
                 }}>
-                    <TabsList>
-                        <TabsTrigger value="all">Todos</TabsTrigger>
-                        <TabsTrigger value="processing">Processando</TabsTrigger>
-                        <TabsTrigger value="done">Concluídos</TabsTrigger>
-                        <TabsTrigger value="error">Com Erro</TabsTrigger>
+                    <TabsList className="grid h-auto min-h-9 w-full grid-cols-2 gap-1.5 p-1.5 sm:inline-flex sm:h-9 sm:w-auto sm:flex-row sm:gap-1 sm:p-[3px]">
+                        <TabsTrigger value="all" className="min-w-0 whitespace-normal px-2 py-1.5 text-xs sm:whitespace-nowrap sm:py-1 sm:text-sm sm:flex-none">Todos</TabsTrigger>
+                        <TabsTrigger value="processing" className="min-w-0 whitespace-normal px-2 py-1.5 text-xs sm:whitespace-nowrap sm:py-1 sm:text-sm sm:flex-none">Processando</TabsTrigger>
+                        <TabsTrigger value="done" className="min-w-0 whitespace-normal px-2 py-1.5 text-xs sm:whitespace-nowrap sm:py-1 sm:text-sm sm:flex-none">Concluídos</TabsTrigger>
+                        <TabsTrigger value="error" className="min-w-0 whitespace-normal px-2 py-1.5 text-xs sm:whitespace-nowrap sm:py-1 sm:text-sm sm:flex-none">Com Erro</TabsTrigger>
                     </TabsList>
                 </Tabs>
 
@@ -237,7 +240,7 @@ export function VideoTable({ data: initialData, onGenerateZip, onRefresh, proces
                             <TableRow>
                                 <TableHead>Vídeo</TableHead>
                                 <TableHead>Status</TableHead>
-                                <TableHead>Enviado Em</TableHead>
+                                <TableHead className="hidden sm:table-cell">Enviado Em</TableHead>
                                 <TableHead className="text-right">Ações</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -248,9 +251,9 @@ export function VideoTable({ data: initialData, onGenerateZip, onRefresh, proces
                 </div>
             </CardContent>
 
-            <CardFooter className="flex items-center justify-between">
+            <CardFooter className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <span>Linhas por página</span>
+                    <span className="whitespace-nowrap">Linhas por página</span>
                     <Select
                         value={pageSize.toString()}
                         onValueChange={(val) => {
@@ -270,14 +273,14 @@ export function VideoTable({ data: initialData, onGenerateZip, onRefresh, proces
                     </Select>
                 </div>
 
-                <div className="flex items-center gap-6 lg:gap-8">
-                    <div className="flex w-[100px] items-center justify-center text-sm font-medium">
+                <div className="flex items-center gap-4 sm:gap-6 lg:gap-8">
+                    <div className="flex min-w-0 items-center justify-center text-sm font-medium">
                         Página {currentPage} de {totalPages || 1}
                     </div>
                     <div className="flex items-center space-x-2">
                         <Button
                             variant="outline"
-                            className="h-8 w-8 p-0"
+                            className="h-8 w-8 p-0 shrink-0"
                             onClick={() => handlePageChange(currentPage - 1)}
                             disabled={currentPage === 1}
                         >
@@ -286,7 +289,7 @@ export function VideoTable({ data: initialData, onGenerateZip, onRefresh, proces
                         </Button>
                         <Button
                             variant="outline"
-                            className="h-8 w-8 p-0"
+                            className="h-8 w-8 p-0 shrink-0"
                             onClick={() => handlePageChange(currentPage + 1)}
                             disabled={currentPage === totalPages || totalPages === 0}
                         >

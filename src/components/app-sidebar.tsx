@@ -1,10 +1,10 @@
 "use client"
 
 import * as React from "react"
-import {
-  IconVideo,
-} from "@tabler/icons-react"
+import { IconVideo, IconUpload } from "@tabler/icons-react"
 import Image from "next/image"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
 import "@/lib/auth-config";
 import { getCurrentUser, fetchUserAttributes, fetchAuthSession } from 'aws-amplify/auth';
 import { Hub } from 'aws-amplify/utils';
@@ -21,18 +21,13 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 
-const data = {
-  navMain: [
-    {
-      title: "Dashboard",
-      url: "/dashboard",
-      icon: IconVideo,
-      isActive: true,
-    },
-  ],
-}
+const navItems = [
+  { title: "Novos vídeos", url: "/novos-videos", icon: IconUpload },
+  { title: "Meus vídeos", url: "/meus-videos", icon: IconVideo },
+]
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const pathname = usePathname()
   const [currentUser, setCurrentUser] = React.useState({
     name: "",
     email: "",
@@ -87,7 +82,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <a href="/dashboard">
+              <Link href="/meus-videos">
                 <Image
                   src="/fiap-lab.svg"
                   width={50}
@@ -96,13 +91,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   alt="Logo do FIAP Lab"
                 />
                 <span className="text-base font-semibold">Fiap Lab</span>
-              </a>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={navItems.map((item) => ({ ...item, isActive: pathname === item.url }))} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={currentUser} />
